@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="content-page">
+    <div class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box">
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                                <li class="breadcrumb-item active">Create Allocation</li>
+                            </ol>
+                        </div>
+                        <h4 class="page-title">Create Vote Allocation</h4>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8 offset-lg-2">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="header-title">New Vote Allocation</h4>
+                            <p class="text-muted">Create a new vote allocation by distributing percentages across parties.</p>
+
+                            <form method="post" id="allocationForm">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Allocation Name *</label>
+                                    <input type="text" class="form-control" id="name" name="name" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="aa_percentage" class="form-label">AA Percentage</label>
+                                            <div class="input-group">
+                                                <input type="number" class="form-control percentage-input" id="aa_percentage" name="aa_percentage" step="0.01" min="0" max="100" value="0">
+                                                <span class="input-group-text">%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="ad_percentage" class="form-label">AD Percentage</label>
+                                            <div class="input-group">
+                                                <input type="number" class="form-control percentage-input" id="ad_percentage" name="ad_percentage" step="0.01" min="0" max="100" value="0">
+                                                <span class="input-group-text">%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="adc_percentage" class="form-label">ADC Percentage</label>
+                                            <div class="input-group">
+                                                <input type="number" class="form-control percentage-input" id="adc_percentage" name="adc_percentage" step="0.01" min="0" max="100" value="0">
+                                                <span class="input-group-text">%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="apc_percentage" class="form-label">APC Percentage</label>
+                                            <div class="input-group">
+                                                <input type="number" class="form-control percentage-input" id="apc_percentage" name="apc_percentage" step="0.01" min="0" max="100" value="0">
+                                                <span class="input-group-text">%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="lp_percentage" class="form-label">LP Percentage</label>
+                                            <div class="input-group">
+                                                <input type="number" class="form-control percentage-input" id="lp_percentage" name="lp_percentage" step="0.01" min="0" max="100" value="0">
+                                                <span class="input-group-text">%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="pdp_percentage" class="form-label">PDP Percentage</label>
+                                            <div class="input-group">
+                                                <input type="number" class="form-control percentage-input" id="pdp_percentage" name="pdp_percentage" step="0.01" min="0" max="100" value="0">
+                                                <span class="input-group-text">%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info" id="totalDisplay">
+                                    <strong>Total Percentage: <span id="totalValue">0.00</span>%</strong>
+                                    <div id="validationMessage" class="mt-1"></div>
+                                </div>
+
+                                <div class="mt-3 mb-3">
+                                    <h6>Quick Allocations:</h6>
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setQuickAllocation('apc', 80)">APC 80%</button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setQuickAllocation('lp', 60)">LP 60%</button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setQuickAllocation('pdp', 70)">PDP 70%</button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearAll()">Clear All</button>
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="{% url 'dashboard' %}" class="btn btn-secondary me-md-2">Cancel</a>
+                                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                                        <i class="ri-save-line me-1"></i> Create Allocation
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const percentageInputs = document.querySelectorAll('.percentage-input');
+    const totalValue = document.getElementById('totalValue');
+    const validationMessage = document.getElementById('validationMessage');
+    const submitBtn = document.getElementById('submitBtn');
+    const totalDisplay = document.getElementById('totalDisplay');
+
+    function updateTotal() {
+        let total = 0;
+        percentageInputs.forEach(input => {
+            total += parseFloat(input.value) || 0;
+        });
+
+        totalValue.textContent = total.toFixed(2);
+
+        if (Math.abs(total - 100) < 0.01) {
+            totalDisplay.className = 'alert alert-success';
+            validationMessage.textContent = '✓ Perfect! Total equals 100%';
+            validationMessage.className = 'mt-1 text-success';
+            submitBtn.disabled = false;
+        } else if (total < 100) {
+            totalDisplay.className = 'alert alert-warning';
+            validationMessage.textContent = `⚠ Need ${(100 - total).toFixed(2)}% more to reach 100%`;
+            validationMessage.className = 'mt-1 text-warning';
+            submitBtn.disabled = true;
+        } else {
+            totalDisplay.className = 'alert alert-danger';
+            validationMessage.textContent = `✗ Exceeds 100% by ${(total - 100).toFixed(2)}%`;
+            validationMessage.className = 'mt-1 text-danger';
+            submitBtn.disabled = true;
+        }
+    }
+
+    percentageInputs.forEach(input => {
+        input.addEventListener('input', updateTotal);
+    });
+
+    window.setQuickAllocation = function(party, percentage) {
+        percentageInputs.forEach(input => input.value = 0);
+        document.getElementById(party + '_percentage').value = percentage;
+        updateTotal();
+    };
+
+    window.clearAll = function() {
+        percentageInputs.forEach(input => input.value = 0);
+        updateTotal();
+    };
+
+    updateTotal();
+});
+</script>
+{% endblock %}

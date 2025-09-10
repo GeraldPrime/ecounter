@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="content-page">
+    <div class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box">
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                                <li class="breadcrumb-item active">Upload Data</li>
+                            </ol>
+                        </div>
+                        <h4 class="page-title">Upload Excel Data</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Debug Info -->
+            
+
+            <div class="row">
+                <div class="col-lg-8 offset-lg-2">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="header-title">Upload Polling Units Data</h4>
+                            <p class="text-muted">Upload an Excel file containing polling units data with the required columns.</p>
+
+                            <form method="post" enctype="multipart/form-data" id="uploadForm">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label for="excel_file" class="form-label">Select Excel File</label>
+                                    <input type="file" class="form-control" id="excel_file" name="excel_file" accept=".xlsx,.xls" required>
+                                    <div class="form-text">Supported formats: .xlsx, .xls</div>
+                                    <div id="file-info" class="mt-2"></div>
+                                </div>
+
+                                <div class="alert alert-info">
+                                    <h6 class="alert-heading">Required Columns:</h6>
+                                    <ul class="mb-0">
+                                        <li>S/NO</li>
+                                        <li>STATE</li>
+                                        <li>LGA</li>
+                                        <li>RA</li>
+                                        <li>DELIM</li>
+                                        <li>REGISTER VOTER AS AT 2023</li>
+                                        <li>REGISTERED VOTER AS AT 2024</li>
+                                        <li>NO OF PVC COLLECTED</li>
+                                        <li>BALANCE OF UNCOLECTED PVCs</li>
+                                        <li>45% PVC COLLECTION</li>
+                                        <li>AA, AD, ADC, APC, LP, PDP (optional)</li>
+                                    </ul>
+                                </div>
+
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="{% url 'dashboard' %}" class="btn btn-secondary me-md-2">Cancel</a>
+                                    <button type="submit" class="btn btn-primary" id="uploadBtn">
+                                        <i class="ri-upload-line me-1"></i> Upload Data
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('excel_file');
+    const fileInfo = document.getElementById('file-info');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const form = document.getElementById('uploadForm');
+
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            fileInfo.innerHTML = `<span class="text-success">Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)</span>`;
+            uploadBtn.disabled = false;
+        } else {
+            fileInfo.innerHTML = '<span class="text-danger">No file selected</span>';
+            uploadBtn.disabled = true;
+        }
+    });
+
+    form.addEventListener('submit', function(e) {
+        const file = fileInput.files[0];
+        if (!file) {
+            e.preventDefault();
+            alert('Please select a file before uploading.');
+            return false;
+        }
+        
+        uploadBtn.innerHTML = '<i class="ri-loader-line me-1"></i> Uploading...';
+        uploadBtn.disabled = true;
+    });
+});
+</script>
+{% endblock %}

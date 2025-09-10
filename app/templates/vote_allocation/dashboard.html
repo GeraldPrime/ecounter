@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="content-page">
+    <div class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box">
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">E-Counter</a></li>
+                                <li class="breadcrumb-item active">Dashboard</li>
+                            </ol>
+                        </div>
+                        <h4 class="page-title">Vote Allocation Dashboard</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row">
+                <div class="col-md-6 col-xl-3">
+                    <div class="card widget-flat">
+                        <div class="card-body">
+                            <div class="float-end">
+                                <i class="ri-file-list-3-line widget-icon"></i>
+                            </div>
+                            <h5 class="text-muted fw-normal mt-0" title="Number of Polling Units">Polling Units</h5>
+                            <h3 class="mt-3 mb-3">{{ total_units|floatformat:0 }}</h3>
+                            <p class="mb-0 text-muted">
+                                <span class="text-success me-2"><i class="ri-arrow-up-line"></i></span>
+                                <span>Total units imported</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-xl-3">
+                    <div class="card widget-flat">
+                        <div class="card-body">
+                            <div class="float-end">
+                                <i class="ri-pie-chart-line widget-icon"></i>
+                            </div>
+                            <h5 class="text-muted fw-normal mt-0" title="Number of Allocations">Allocations</h5>
+                            <h3 class="mt-3 mb-3">{{ total_allocations|floatformat:0 }}</h3>
+                            <p class="mb-0 text-muted">
+                                <span class="text-success me-2"><i class="ri-arrow-up-line"></i></span>
+                                <span>Vote allocations created</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-xl-3">
+                    <div class="card widget-flat">
+                        <div class="card-body">
+                            <div class="float-end">
+                                <i class="ri-group-line widget-icon"></i>
+                            </div>
+                            <h5 class="text-muted fw-normal mt-0" title="Total 45% PVC">Total 45% PVC</h5>
+                            <h3 class="mt-3 mb-3">{{ total_pvc_45|floatformat:0 }}</h3>
+                            <p class="mb-0 text-muted">
+                                <span class="text-success me-2"><i class="ri-arrow-up-line"></i></span>
+                                <span>Available for allocation</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-xl-3">
+                    <div class="card widget-flat">
+                        <div class="card-body">
+                            <div class="float-end">
+                                <i class="ri-download-line widget-icon"></i>
+                            </div>
+                            <h5 class="text-muted fw-normal mt-0" title="Downloads">Actions</h5>
+                            <h3 class="mt-3 mb-3">Ready</h3>
+                            <p class="mb-0 text-muted">
+                                <span class="text-success me-2"><i class="ri-check-line"></i></span>
+                                <span>System operational</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="header-title mb-3">Quick Actions</h4>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <a href="{% url 'upload_data' %}" class="btn btn-primary w-100 mb-2">
+                                        <i class="ri-upload-line me-1"></i> Upload Excel Data
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="{% url 'create_allocation' %}" class="btn btn-success w-100 mb-2">
+                                        <i class="ri-pie-chart-line me-1"></i> Create Allocation
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="{% url 'polling_units_list' %}" class="btn btn-info w-100 mb-2">
+                                        <i class="ri-list-check me-1"></i> View Polling Units
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="{% url 'allocations_list' %}" class="btn btn-warning w-100 mb-2">
+                                        <i class="ri-file-list-3-line me-1"></i> View Allocations
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Allocations -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="dropdown float-end">
+                                <a href="#" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="ri-more-2-fill"></i>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-end">
+                                    <a href="{% url 'allocations_list' %}" class="dropdown-item">View All</a>
+                                </div>
+                            </div>
+
+                            <h4 class="header-title mb-3">Recent Allocations</h4>
+
+                            <div class="table-responsive">
+                                <table class="table table-sm table-centered mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>APC %</th>
+                                            <th>LP %</th>
+                                            <th>PDP %</th>
+                                            <th>Total %</th>
+                                            <th>Created</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for allocation in recent_allocations %}
+                                        <tr>
+                                            <td>{{ allocation.name }}</td>
+                                            <td>{{ allocation.apc_percentage }}%</td>
+                                            <td>{{ allocation.lp_percentage }}%</td>
+                                            <td>{{ allocation.pdp_percentage }}%</td>
+                                            <td>
+                                                <span class="badge {% if allocation.is_valid_allocation %}bg-success{% else %}bg-danger{% endif %}">
+                                                    {{ allocation.total_percentage }}%
+                                                </span>
+                                            </td>
+                                            <td>{{ allocation.created_at|date:"M d, Y" }}</td>
+                                            <td>
+                                                <a href="{% url 'view_allocation_results' allocation.id %}" class="btn btn-sm btn-outline-primary">View</a>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="7" class="text-center text-muted">No allocations created yet</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Status -->
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="header-title">System Status</h4>
+                            <div class="mt-3">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Data Upload</span>
+                                    <span class="badge bg-success">Active</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Allocation Engine</span>
+                                    <span class="badge bg-success">Ready</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Export Functions</span>
+                                    <span class="badge bg-success">Available</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="header-title">Quick Stats</h4>
+                            <div class="mt-3">
+                                {% if total_units > 0 %}
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Average PVC per Unit</span>
+                                    <strong>{{ average_pvc_per_unit|floatformat:1 }}</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Largest State</span>
+                                    <strong>ANAMBRA</strong>
+                                </div>
+                                {% endif %}
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Last Updated</span>
+                                    <strong>{{ "now"|date:"M d, Y H:i" }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+<!-- templates/vote_allocation/allocations_list.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="content-page">
+    <div class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box">
+                        <div class="page-title-right">
+                            <a href="{% url 'create_allocation' %}" class="btn btn-primary">
+                                <i class="ri-add-line me-1"></i> Create New Allocation
+                            </a>
+                        </div>
+                        <h4 class="page-title">Vote Allocations</h4>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="header-title">All Allocations</h4>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Description</th>
+                                            <th>APC %</th>
+                                            <th>LP %</th>
+                                            <th>PDP %</th>
+                                            <th>Total %</th>
+                                            <th>Status</th>
+                                            <th>Created</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for allocation in allocations %}
+                                        <tr>
+                                            <td><strong>{{ allocation.name }}</strong></td>
+                                            <td>{{ allocation.description|truncatechars:50 }}</td>
+                                            <td>{{ allocation.apc_percentage }}%</td>
+                                            <td>{{ allocation.lp_percentage }}%</td>
+                                            <td>{{ allocation.pdp_percentage }}%</td>
+                                            <td>{{ allocation.total_percentage }}%</td>
+                                            <td>
+                                                {% if allocation.is_valid_allocation %}
+                                                    <span class="badge bg-success">Valid</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">Invalid</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ allocation.created_at|date:"M d, Y" }}</td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="{% url 'view_allocation_results' allocation.id %}" class="btn btn-sm btn-outline-primary">View</a>
+                                                    <a href="{% url 'download_allocation_excel' allocation.id %}" class="btn btn-sm btn-outline-success">Download</a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="9" class="text-center text-muted">
+                                                No allocations created yet. 
+                                                <a href="{% url 'create_allocation' %}">Create your first allocation</a>.
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

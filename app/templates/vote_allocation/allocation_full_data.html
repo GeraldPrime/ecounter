@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="content-page">
+    <div class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box">
+                        <div class="page-title-right">
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'download_allocation_excel' allocation.id %}" class="btn btn-success">
+                                    <i class="ri-file-excel-2-line me-1"></i> Excel
+                                </a>
+                                <a href="{% url 'download_allocation_pdf' allocation.id %}" class="btn btn-danger">
+                                    <i class="ri-file-pdf-line me-1"></i> PDF
+                                </a>
+                                <a href="{% url 'view_allocation_results' allocation.id %}" class="btn btn-info">
+                                    <i class="ri-bar-chart-line me-1"></i> Summary
+                                </a>
+                            </div>
+                        </div>
+                        <h4 class="page-title">{{ allocation.name }} - Complete Data</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Allocation Info Bar -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <strong>Vote Distribution:</strong>
+                                AA ({{ allocation.aa_percentage }}%) | 
+                                AD ({{ allocation.ad_percentage }}%) | 
+                                ADC ({{ allocation.adc_percentage }}%) | 
+                                APC ({{ allocation.apc_percentage }}%) | 
+                                LP ({{ allocation.lp_percentage }}%) | 
+                                PDP ({{ allocation.pdp_percentage }}%)
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <strong>Total Records:</strong> {{ page_obj.paginator.count }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <form method="get" class="row g-3">
+                                <div class="col-md-10">
+                                    <input type="text" class="form-control" name="search" placeholder="Search by state, LGA, or polling unit name..." value="{{ search }}">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="ri-search-line me-1"></i> Search
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Totals Summary -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Vote Totals Summary</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-sm">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th class="text-center">AA</th>
+                                            <th class="text-center">AD</th>
+                                            <th class="text-center">ADC</th>
+                                            <th class="text-center">APC</th>
+                                            <th class="text-center">LP</th>
+                                            <th class="text-center">PDP</th>
+                                            <th class="text-center">GRAND TOTAL</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="table-light">
+                                            <td class="text-center"><strong>{{ totals.total_aa|floatformat:0 }}</strong></td>
+                                            <td class="text-center"><strong>{{ totals.total_ad|floatformat:0 }}</strong></td>
+                                            <td class="text-center"><strong>{{ totals.total_adc|floatformat:0 }}</strong></td>
+                                            <td class="text-center"><strong>{{ totals.total_apc|floatformat:0 }}</strong></td>
+                                            <td class="text-center"><strong>{{ totals.total_lp|floatformat:0 }}</strong></td>
+                                            <td class="text-center"><strong>{{ totals.total_pdp|floatformat:0 }}</strong></td>
+                                            <td class="text-center"><strong class="text-primary">{{ totals.grand_total|floatformat:0 }}</strong></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Data Table -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="header-title">Complete Vote Allocation Data</h4>
+                                <div>
+                                    <span class="badge bg-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-striped table-sm">
+                                    <thead class="table-secondary">
+                                        <tr>
+                                            <th>S/NO</th>
+                                            <th>State</th>
+                                            <th>LGA</th>
+                                            <th>RA</th>
+                                            <th>Polling Unit</th>
+                                            <th>Reg Voters</th>
+                                            <th>PVC Collected</th>
+                                            <th class="text-center bg-primary text-white">AA<br><small>({{ allocation.aa_percentage }}%)</small></th>
+                                            <th class="text-center bg-info text-white">AD<br><small>({{ allocation.ad_percentage }}%)</small></th>
+                                            <th class="text-center bg-warning text-white">ADC<br><small>({{ allocation.adc_percentage }}%)</small></th>
+                                            <th class="text-center bg-success text-white">APC<br><small>({{ allocation.apc_percentage }}%)</small></th>
+                                            <th class="text-center bg-danger text-white">LP<br><small>({{ allocation.lp_percentage }}%)</small></th>
+                                            <th class="text-center bg-secondary text-white">PDP<br><small>({{ allocation.pdp_percentage }}%)</small></th>
+                                            <th class="text-center bg-dark text-white">TOTAL</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for result in page_obj %}
+                                        <tr>
+                                            <td>{{ result.polling_unit.sno }}</td>
+                                            <td>{{ result.polling_unit.state }}</td>
+                                            <td>{{ result.polling_unit.lga }}</td>
+                                            <td>{{ result.polling_unit.ra }}</td>
+                                            <td>{{ result.polling_unit.delim|truncatechars:25 }}</td>
+                                            <td>{{ result.polling_unit.registered_voter_2024 }}</td>
+                                            <td><strong>{{ result.polling_unit.pvc_collected }}</strong></td>
+                                            <td class="text-center">{{ result.aa_votes }}</td>
+                                            <td class="text-center">{{ result.ad_votes }}</td>
+                                            <td class="text-center">{{ result.adc_votes }}</td>
+                                            <td class="text-center">{{ result.apc_votes }}</td>
+                                            <td class="text-center">{{ result.lp_votes }}</td>
+                                            <td class="text-center">{{ result.pdp_votes }}</td>
+                                            <td class="text-center"><strong>{{ result.total_votes }}</strong></td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="14" class="text-center text-muted">
+                                                {% if search %}
+                                                    No results found matching "{{ search }}".
+                                                    <a href="{% url 'view_allocation_full_data' allocation.id %}">Show all data</a>.
+                                                {% else %}
+                                                    No allocation data available.
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Pagination -->
+                            {% if page_obj.has_other_pages %}
+                            <nav aria-label="Page navigation" class="mt-3">
+                                <ul class="pagination justify-content-center">
+                                    {% if page_obj.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}">Previous</a>
+                                        </li>
+                                    {% endif %}
+                                    
+                                    {% for num in page_obj.paginator.page_range %}
+                                        {% if page_obj.number == num %}
+                                            <li class="page-item active">
+                                                <span class="page-link">{{ num }}</span>
+                                            </li>
+                                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}">{{ num }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if page_obj.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}">Next</a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                            {% endif %}
+
+                            <div class="mt-3 text-muted text-center">
+                                Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} polling units
+                                {% if search %}(filtered by "{{ search }}"){% endif %}
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="mt-3 text-center">
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'download_allocation_excel' allocation.id %}" class="btn btn-success">
+                                        <i class="ri-file-excel-2-line me-1"></i> Download Complete Excel
+                                    </a>
+                                    <a href="{% url 'download_allocation_pdf' allocation.id %}" class="btn btn-danger">
+                                        <i class="ri-file-pdf-line me-1"></i> Download PDF (Sample)
+                                    </a>
+                                    <a href="{% url 'view_allocation_results' allocation.id %}" class="btn btn-info">
+                                        <i class="ri-bar-chart-line me-1"></i> View Summary
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
