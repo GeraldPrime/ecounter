@@ -131,11 +131,15 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Static files settings
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# Directory where all static files will be collected during `collectstatic`
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
+    BASE_DIR / 'blog' / 'static',  # Add this if you have app-specific static files
 ]
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # File upload settings
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
