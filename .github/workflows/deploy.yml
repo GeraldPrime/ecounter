@@ -1,0 +1,30 @@
+name: Deploy Ecounter to Hostinger VPS
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Deploy to server
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        
+        script: |
+          set -e
+          cd /opt/ecounter/ecounter/ecounter
+          git pull origin main
+          source /opt/ecounter/bin/activate
+          pip install -r requirements.txt
+          python manage.py migrate
+          python manage.py collectstatic --noinput
+          sudo systemctl restart ecounter
+          sleep 3
+          sudo systemctl reload nginx
+          echo "✅ Deployment completed!"
