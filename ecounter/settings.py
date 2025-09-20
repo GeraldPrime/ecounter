@@ -26,6 +26,15 @@ SECRET_KEY = 'django-insecure-o2ho)3k-)3#++=_kxu3_yukd&vn)=std)-^w9fxa^or5%e+*3-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://ecountervote.com',
+    'https://www.ecountervote.com',
+    'http://ecountervote.com',
+    'http://www.ecountervote.com',
+    'http://31.97.59.213:8001',
+]
+
 ALLOWED_HOSTS = [
     '31.97.59.213',
     'ecountervote.com',
@@ -34,6 +43,8 @@ ALLOWED_HOSTS = [
     'localhost',                  
     '127.0.0.1',
 ]
+
+
 
 
 # Application definition
