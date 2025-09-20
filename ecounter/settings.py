@@ -29,6 +29,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     '31.97.59.213',
     'ecountervote.com',
+    'www.ecountervote.com',
     '31.97.59.213:8001',
     'localhost',                  
     '127.0.0.1',
