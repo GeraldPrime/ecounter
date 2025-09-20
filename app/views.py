@@ -20,7 +20,22 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 
 from .models import PollingUnit, VoteAllocation, AllocatedResult
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
 
+def signin_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None and user.is_staff:
+            login(request, user)
+            return redirect('dashboard')
+        else:
+            messages.error(request, 'Invalid credentials or not an admin user.')
+    return render(request, 'signin.html')
+
+@login_required
 def dashboard(request):
     """Main dashboard view"""
     total_units = PollingUnit.objects.count()
@@ -124,6 +139,7 @@ def dashboard(request):
 #     return render(request, 'vote_allocation/upload.html')
 
 
+@login_required
 def upload_data(request):
     """Handle Excel file upload"""
     if request.method == 'POST' and request.FILES.get('excel_file'):
@@ -194,6 +210,7 @@ def upload_data(request):
 
     return render(request, 'vote_allocation/upload.html')
 
+@login_required
 def polling_units_list(request):
     """List all polling units with pagination"""
     units = PollingUnit.objects.all()
@@ -375,6 +392,7 @@ def create_allocation(request):
     return render(request, 'vote_allocation/create_allocation.html')
 
 
+@login_required
 def allocations_list(request):
     """List all vote allocations"""
     allocations = VoteAllocation.objects.order_by('-created_at')
@@ -480,6 +498,7 @@ def calculate_allocated_results(allocation):
     print(f"Created realistic allocation results for {len(results)} polling units")
 
 # FIXED - Single view_allocation_results function
+@login_required
 def view_allocation_results(request, allocation_id):
     """View allocation details and results with party percentages displayed"""
     allocation = get_object_or_404(VoteAllocation, id=allocation_id)
@@ -521,6 +540,7 @@ def view_allocation_results(request, allocation_id):
     return render(request, 'vote_allocation/view_allocation_results.html', context)
 
 # NEW - Full data view like polling units but with party allocations
+@login_required
 def view_allocation_full_data(request, allocation_id):
     """View all allocated results in a table format like polling units"""
     allocation = get_object_or_404(VoteAllocation, id=allocation_id)
@@ -558,120 +578,7 @@ def view_allocation_full_data(request, allocation_id):
     }
     return render(request, 'vote_allocation/allocation_full_data.html', context)
 
-# def download_allocation_excel(request, allocation_id):
-#     """Download allocation results as Excel file with complete data"""
-#     allocation = get_object_or_404(VoteAllocation, id=allocation_id)
-#     results = AllocatedResult.objects.filter(vote_allocation=allocation).select_related('polling_unit').order_by('polling_unit__sno')
-    
-#     # Create workbook
-#     wb = openpyxl.Workbook()
-#     ws = wb.active
-#     ws.title = "Vote Allocation Results"
-    
-#     # Headers with allocation percentages
-#     headers = [
-#         'S/NO', 'STATE', 'LGA', 'RA', 'DELIM', 'REGISTER VOTER AS AT 2023',
-#         'REGISTERED VOTER AS AT 2024', 'NO OF PVC COLLECTED', 'BALANCE OF UNCOLLECTED PVCs',
-#         f'AA ({allocation.aa_percentage}%)', 
-#         f'AD ({allocation.ad_percentage}%)', 
-#         f'ADC ({allocation.adc_percentage}%)', 
-#         f'APC ({allocation.apc_percentage}%)', 
-#         f'LP ({allocation.lp_percentage}%)', 
-#         f'PDP ({allocation.pdp_percentage}%)', 
-#         'TOTAL'
-#     ]
-    
-#     # Style headers
-#     header_font = Font(bold=True, color="FFFFFF")
-#     header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
-    
-#     for col, header in enumerate(headers, 1):
-#         cell = ws.cell(row=1, column=col, value=header)
-#         cell.font = header_font
-#         cell.fill = header_fill
-#         cell.alignment = Alignment(horizontal="center")
-    
-#     # Add allocation summary in the top right
-#     ws.cell(row=1, column=len(headers) + 2, value=f"Allocation: {allocation.name}")
-#     ws.cell(row=2, column=len(headers) + 2, value=f"Created: {allocation.created_at.strftime('%Y-%m-%d')}")
-    
-#     # Data rows
-#     for row_num, result in enumerate(results, 2):
-#         unit = result.polling_unit
-#         ws.cell(row=row_num, column=1, value=unit.sno)
-#         ws.cell(row=row_num, column=2, value=unit.state)
-#         ws.cell(row=row_num, column=3, value=unit.lga)
-#         ws.cell(row=row_num, column=4, value=unit.ra)
-#         ws.cell(row=row_num, column=5, value=unit.delim)
-#         ws.cell(row=row_num, column=6, value=unit.register_voter_2023)
-#         ws.cell(row=row_num, column=7, value=unit.registered_voter_2024)
-#         ws.cell(row=row_num, column=8, value=unit.pvc_collected)
-#         ws.cell(row=row_num, column=9, value=unit.balance_uncollected)
-#         ws.cell(row=row_num, column=10, value=result.aa_votes)
-#         ws.cell(row=row_num, column=11, value=result.ad_votes)
-#         ws.cell(row=row_num, column=12, value=result.adc_votes)
-#         ws.cell(row=row_num, column=13, value=result.apc_votes)
-#         ws.cell(row=row_num, column=14, value=result.lp_votes)
-#         ws.cell(row=row_num, column=15, value=result.pdp_votes)
-#         ws.cell(row=row_num, column=16, value=result.total_votes)
-    
-#     # Add totals row
-#     total_row = len(results) + 2
-#     ws.cell(row=total_row, column=1, value="TOTALS")
-    
-#     # Calculate totals
-#     totals = results.aggregate(
-#         total_aa=Sum('aa_votes'),
-#         total_ad=Sum('ad_votes'),
-#         total_adc=Sum('adc_votes'),
-#         total_apc=Sum('apc_votes'),
-#         total_lp=Sum('lp_votes'),
-#         total_pdp=Sum('pdp_votes'),
-#         grand_total=Sum('total_votes'),
-#     )
-    
-#     ws.cell(row=total_row, column=10, value=totals['total_aa'])
-#     ws.cell(row=total_row, column=11, value=totals['total_ad'])
-#     ws.cell(row=total_row, column=12, value=totals['total_adc'])
-#     ws.cell(row=total_row, column=13, value=totals['total_apc'])
-#     ws.cell(row=total_row, column=14, value=totals['total_lp'])
-#     ws.cell(row=total_row, column=15, value=totals['total_pdp'])
-#     ws.cell(row=total_row, column=16, value=totals['grand_total'])
-    
-#     # Style totals row
-#     for col in range(1, 17):
-#         cell = ws.cell(row=total_row, column=col)
-#         cell.font = Font(bold=True)
-#         cell.fill = PatternFill(start_color="E8E8E8", end_color="E8E8E8", fill_type="solid")
-    
-#     # Auto-adjust column widths
-#     for column in ws.columns:
-#         max_length = 0
-#         column_letter = column[0].column_letter
-#         for cell in column:
-#             try:
-#                 if len(str(cell.value)) > max_length:
-#                     max_length = len(str(cell.value))
-#             except:
-#                 pass
-#         adjusted_width = min(max_length + 2, 30)
-#         ws.column_dimensions[column_letter].width = adjusted_width
-    
-#     # Save to BytesIO
-#     output = BytesIO()
-#     wb.save(output)
-#     output.seek(0)
-    
-#     # Create response
-#     filename = f"vote_allocation_{allocation.name.replace(' ', '_')}_{allocation.id}.xlsx"
-#     response = HttpResponse(
-#         output.getvalue(),
-#         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-#     )
-#     response['Content-Disposition'] = f'attachment; filename="{filename}"'
-    
-#     return response
-
+@login_required
 def download_allocation_excel(request, allocation_id):
     """Download allocation results as Excel file with complete totals"""
     allocation = get_object_or_404(VoteAllocation, id=allocation_id)
@@ -792,6 +699,7 @@ def download_allocation_excel(request, allocation_id):
 
 
 # NEW - PDF Download Function
+@login_required
 def download_allocation_pdf(request, allocation_id):
     """Download allocation results as PDF file"""
     allocation = get_object_or_404(VoteAllocation, id=allocation_id)
@@ -903,6 +811,7 @@ def download_allocation_pdf(request, allocation_id):
     return response
 
 @csrf_exempt
+@login_required
 def validate_allocation(request):
     """AJAX endpoint to validate allocation percentages"""
     if request.method == 'POST':
