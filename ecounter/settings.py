@@ -140,7 +140,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 STATICFILES_DIRS = [
-    BASE_DIR / 'blog' / 'static',  # Add this if you have app-specific static files
+    BASE_DIR / 'app' / 'static',  # Add this if you have app-specific static files
 ]
 
 # File upload settings
