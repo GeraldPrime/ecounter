@@ -347,6 +347,20 @@ def create_allocation(request):
                 apc_percentage=float(request.POST.get('apc_percentage', 0)),
                 lp_percentage=float(request.POST.get('lp_percentage', 0)),
                 pdp_percentage=float(request.POST.get('pdp_percentage', 0)),
+                nrm_percentage=float(request.POST.get('nrm_percentage', 0)),
+                nnpp_percentage=float(request.POST.get('nnpp_percentage', 0)),
+                prp_percentage=float(request.POST.get('prp_percentage', 0)),
+                sdp_percentage=float(request.POST.get('sdp_percentage', 0)),
+                ypp_percentage=float(request.POST.get('ypp_percentage', 0)),
+                yp_percentage=float(request.POST.get('yp_percentage', 0)),
+                zlp_percentage=float(request.POST.get('zlp_percentage', 0)),
+                a_percentage=float(request.POST.get('a_percentage', 0)),
+                aac_percentage=float(request.POST.get('aac_percentage', 0)),
+                adp_percentage=float(request.POST.get('adp_percentage', 0)),
+                apm_percentage=float(request.POST.get('apm_percentage', 0)),
+                apga_percentage=float(request.POST.get('apga_percentage', 0)),
+                app_percentage=float(request.POST.get('app_percentage', 0)),
+                bp_percentage=float(request.POST.get('bp_percentage', 0)),
             )
             
             if not allocation.is_valid_allocation():
@@ -367,7 +381,23 @@ def create_allocation(request):
                     apc_votes = int(base_votes * (allocation.apc_percentage / 100))
                     lp_votes = int(base_votes * (allocation.lp_percentage / 100))
                     pdp_votes = int(base_votes * (allocation.pdp_percentage / 100))
-                    total_votes = aa_votes + ad_votes + adc_votes + apc_votes + lp_votes + pdp_votes
+                    nrm_votes = int(base_votes * (allocation.nrm_percentage / 100))
+                    nnpp_votes = int(base_votes * (allocation.nnpp_percentage / 100))
+                    prp_votes = int(base_votes * (allocation.prp_percentage / 100))
+                    sdp_votes = int(base_votes * (allocation.sdp_percentage / 100))
+                    ypp_votes = int(base_votes * (allocation.ypp_percentage / 100))
+                    yp_votes = int(base_votes * (allocation.yp_percentage / 100))
+                    zlp_votes = int(base_votes * (allocation.zlp_percentage / 100))
+                    a_votes = int(base_votes * (allocation.a_percentage / 100))
+                    aac_votes = int(base_votes * (allocation.aac_percentage / 100))
+                    adp_votes = int(base_votes * (allocation.adp_percentage / 100))
+                    apm_votes = int(base_votes * (allocation.apm_percentage / 100))
+                    apga_votes = int(base_votes * (allocation.apga_percentage / 100))
+                    app_votes = int(base_votes * (allocation.app_percentage / 100))
+                    bp_votes = int(base_votes * (allocation.bp_percentage / 100))
+                    total_votes = (aa_votes + ad_votes + adc_votes + apc_votes + lp_votes + pdp_votes +
+                                 nrm_votes + nnpp_votes + prp_votes + sdp_votes + ypp_votes + yp_votes +
+                                 zlp_votes + a_votes + aac_votes + adp_votes + apm_votes + apga_votes + app_votes + bp_votes)
                     
                     results.append(AllocatedResult(
                         polling_unit=unit,
@@ -378,6 +408,20 @@ def create_allocation(request):
                         apc_votes=apc_votes,
                         lp_votes=lp_votes,
                         pdp_votes=pdp_votes,
+                        nrm_votes=nrm_votes,
+                        nnpp_votes=nnpp_votes,
+                        prp_votes=prp_votes,
+                        sdp_votes=sdp_votes,
+                        ypp_votes=ypp_votes,
+                        yp_votes=yp_votes,
+                        zlp_votes=zlp_votes,
+                        a_votes=a_votes,
+                        aac_votes=aac_votes,
+                        adp_votes=adp_votes,
+                        apm_votes=apm_votes,
+                        apga_votes=apga_votes,
+                        app_votes=app_votes,
+                        bp_votes=bp_votes,
                         total_votes=total_votes,
                     ))
             
@@ -517,6 +561,20 @@ def view_allocation_results(request, allocation_id):
         total_apc=Sum('apc_votes'),
         total_lp=Sum('lp_votes'),
         total_pdp=Sum('pdp_votes'),
+        total_nrm=Sum('nrm_votes'),
+        total_nnpp=Sum('nnpp_votes'),
+        total_prp=Sum('prp_votes'),
+        total_sdp=Sum('sdp_votes'),
+        total_ypp=Sum('ypp_votes'),
+        total_yp=Sum('yp_votes'),
+        total_zlp=Sum('zlp_votes'),
+        total_a=Sum('a_votes'),
+        total_aac=Sum('aac_votes'),
+        total_adp=Sum('adp_votes'),
+        total_apm=Sum('apm_votes'),
+        total_apga=Sum('apga_votes'),
+        total_app=Sum('app_votes'),
+        total_bp=Sum('bp_votes'),
         grand_total=Sum('total_votes'),
     )
     
@@ -529,6 +587,20 @@ def view_allocation_results(request, allocation_id):
         'apc': (totals['total_apc'] or 0) / grand_total * 100,
         'lp': (totals['total_lp'] or 0) / grand_total * 100,
         'pdp': (totals['total_pdp'] or 0) / grand_total * 100,
+        'nrm': (totals['total_nrm'] or 0) / grand_total * 100,
+        'nnpp': (totals['total_nnpp'] or 0) / grand_total * 100,
+        'prp': (totals['total_prp'] or 0) / grand_total * 100,
+        'sdp': (totals['total_sdp'] or 0) / grand_total * 100,
+        'ypp': (totals['total_ypp'] or 0) / grand_total * 100,
+        'yp': (totals['total_yp'] or 0) / grand_total * 100,
+        'zlp': (totals['total_zlp'] or 0) / grand_total * 100,
+        'a': (totals['total_a'] or 0) / grand_total * 100,
+        'aac': (totals['total_aac'] or 0) / grand_total * 100,
+        'adp': (totals['total_adp'] or 0) / grand_total * 100,
+        'apm': (totals['total_apm'] or 0) / grand_total * 100,
+        'apga': (totals['total_apga'] or 0) / grand_total * 100,
+        'app': (totals['total_app'] or 0) / grand_total * 100,
+        'bp': (totals['total_bp'] or 0) / grand_total * 100,
     }
 
     context = {
@@ -567,6 +639,20 @@ def view_allocation_full_data(request, allocation_id):
         total_apc=Sum('apc_votes'),
         total_lp=Sum('lp_votes'),
         total_pdp=Sum('pdp_votes'),
+        total_nrm=Sum('nrm_votes'),
+        total_nnpp=Sum('nnpp_votes'),
+        total_prp=Sum('prp_votes'),
+        total_sdp=Sum('sdp_votes'),
+        total_ypp=Sum('ypp_votes'),
+        total_yp=Sum('yp_votes'),
+        total_zlp=Sum('zlp_votes'),
+        total_a=Sum('a_votes'),
+        total_aac=Sum('aac_votes'),
+        total_adp=Sum('adp_votes'),
+        total_apm=Sum('apm_votes'),
+        total_apga=Sum('apga_votes'),
+        total_app=Sum('app_votes'),
+        total_bp=Sum('bp_votes'),
         grand_total=Sum('total_votes'),
     )
     
@@ -598,6 +684,19 @@ def download_allocation_excel(request, allocation_id):
         f'APC ({allocation.apc_percentage}%)', 
         f'LP ({allocation.lp_percentage}%)', 
         f'PDP ({allocation.pdp_percentage}%)', 
+        f'NRM ({allocation.nrm_percentage}%)',
+        f'NNPP ({allocation.nnpp_percentage}%)',
+        f'PRP ({allocation.prp_percentage}%)',
+        f'SDP ({allocation.sdp_percentage}%)',
+        f'YPP ({allocation.ypp_percentage}%)',
+        f'YP ({allocation.yp_percentage}%)',
+        f'ZLP ({allocation.zlp_percentage}%)',
+        f'A ({allocation.a_percentage}%)',
+        f'AAC ({allocation.aac_percentage}%)',
+        f'APM ({allocation.apm_percentage}%)',
+        f'APGA ({allocation.apga_percentage}%)',
+        f'APP ({allocation.app_percentage}%)',
+        f'BP ({allocation.bp_percentage}%)',
         'TOTAL'
     ]
     
@@ -630,7 +729,20 @@ def download_allocation_excel(request, allocation_id):
         ws.cell(row=row_num, column=14, value=result.apc_votes)
         ws.cell(row=row_num, column=15, value=result.lp_votes)
         ws.cell(row=row_num, column=16, value=result.pdp_votes)
-        ws.cell(row=row_num, column=17, value=result.total_votes)
+        ws.cell(row=row_num, column=17, value=result.nrm_votes)
+        ws.cell(row=row_num, column=18, value=result.nnpp_votes)
+        ws.cell(row=row_num, column=19, value=result.prp_votes)
+        ws.cell(row=row_num, column=20, value=result.sdp_votes)
+        ws.cell(row=row_num, column=21, value=result.ypp_votes)
+        ws.cell(row=row_num, column=22, value=result.yp_votes)
+        ws.cell(row=row_num, column=23, value=result.zlp_votes)
+        ws.cell(row=row_num, column=24, value=result.a_votes)
+        ws.cell(row=row_num, column=25, value=result.aac_votes)
+        ws.cell(row=row_num, column=26, value=result.apm_votes)
+        ws.cell(row=row_num, column=27, value=result.apga_votes)
+        ws.cell(row=row_num, column=28, value=result.app_votes)
+        ws.cell(row=row_num, column=29, value=result.bp_votes)
+        ws.cell(row=row_num, column=30, value=result.total_votes)
     
     # TOTALS ROW - Calculate totals for ALL numeric columns
     total_row = len(results) + 2
@@ -649,6 +761,19 @@ def download_allocation_excel(request, allocation_id):
         total_apc=Sum('apc_votes'),
         total_lp=Sum('lp_votes'),
         total_pdp=Sum('pdp_votes'),
+        total_nrm=Sum('nrm_votes'),
+        total_nnpp=Sum('nnpp_votes'),
+        total_prp=Sum('prp_votes'),
+        total_sdp=Sum('sdp_votes'),
+        total_ypp=Sum('ypp_votes'),
+        total_yp=Sum('yp_votes'),
+        total_zlp=Sum('zlp_votes'),
+        total_a=Sum('a_votes'),
+        total_aac=Sum('aac_votes'),
+        total_apm=Sum('apm_votes'),
+        total_apga=Sum('apga_votes'),
+        total_app=Sum('app_votes'),
+        total_bp=Sum('bp_votes'),
         grand_total=Sum('total_votes'),
     )
     
@@ -663,10 +788,23 @@ def download_allocation_excel(request, allocation_id):
     ws.cell(row=total_row, column=14, value=vote_totals['total_apc'])
     ws.cell(row=total_row, column=15, value=vote_totals['total_lp'])
     ws.cell(row=total_row, column=16, value=vote_totals['total_pdp'])
-    ws.cell(row=total_row, column=17, value=vote_totals['grand_total'])
+    ws.cell(row=total_row, column=17, value=vote_totals['total_nrm'])
+    ws.cell(row=total_row, column=18, value=vote_totals['total_nnpp'])
+    ws.cell(row=total_row, column=19, value=vote_totals['total_prp'])
+    ws.cell(row=total_row, column=20, value=vote_totals['total_sdp'])
+    ws.cell(row=total_row, column=21, value=vote_totals['total_ypp'])
+    ws.cell(row=total_row, column=22, value=vote_totals['total_yp'])
+    ws.cell(row=total_row, column=23, value=vote_totals['total_zlp'])
+    ws.cell(row=total_row, column=24, value=vote_totals['total_a'])
+    ws.cell(row=total_row, column=25, value=vote_totals['total_aac'])
+    ws.cell(row=total_row, column=26, value=vote_totals['total_apm'])
+    ws.cell(row=total_row, column=27, value=vote_totals['total_apga'])
+    ws.cell(row=total_row, column=28, value=vote_totals['total_app'])
+    ws.cell(row=total_row, column=29, value=vote_totals['total_bp'])
+    ws.cell(row=total_row, column=30, value=vote_totals['grand_total'])
     
     # Style totals row
-    for col in range(1, 18):
+    for col in range(1, 31):
         cell = ws.cell(row=total_row, column=col)
         cell.font = Font(bold=True)
         cell.fill = PatternFill(start_color="E8E8E8", end_color="E8E8E8", fill_type="solid")
@@ -738,7 +876,7 @@ def download_allocation_pdf(request, allocation_id):
     
     # Table data
     table_data = [
-        ['S/NO', 'State', 'LGA', 'Polling Unit', 'PVC', 'AA', 'AD', 'ADC', 'APC', 'LP', 'PDP', 'Total']
+        ['S/NO', 'State', 'LGA', 'Polling Unit', 'PVC', 'AA', 'AD', 'ADC', 'APC', 'LP', 'PDP', 'NRM', 'NNPP', 'PRP', 'SDP', 'YPP', 'YP', 'ZLP', 'A', 'AAC', 'APM', 'APGA', 'APP', 'BP', 'Total']
     ]
     
     for result in results:
@@ -755,6 +893,19 @@ def download_allocation_pdf(request, allocation_id):
             str(result.apc_votes),
             str(result.lp_votes),
             str(result.pdp_votes),
+            str(result.nrm_votes),
+            str(result.nnpp_votes),
+            str(result.prp_votes),
+            str(result.sdp_votes),
+            str(result.ypp_votes),
+            str(result.yp_votes),
+            str(result.zlp_votes),
+            str(result.a_votes),
+            str(result.aac_votes),
+            str(result.apm_votes),
+            str(result.apga_votes),
+            str(result.app_votes),
+            str(result.bp_votes),
             str(result.total_votes)
         ])
     
@@ -782,6 +933,19 @@ def download_allocation_pdf(request, allocation_id):
         total_apc=Sum('apc_votes'),
         total_lp=Sum('lp_votes'),
         total_pdp=Sum('pdp_votes'),
+        total_nrm=Sum('nrm_votes'),
+        total_nnpp=Sum('nnpp_votes'),
+        total_prp=Sum('prp_votes'),
+        total_sdp=Sum('sdp_votes'),
+        total_ypp=Sum('ypp_votes'),
+        total_yp=Sum('yp_votes'),
+        total_zlp=Sum('zlp_votes'),
+        total_a=Sum('a_votes'),
+        total_aac=Sum('aac_votes'),
+        total_apm=Sum('apm_votes'),
+        total_apga=Sum('apga_votes'),
+        total_app=Sum('app_votes'),
+        total_bp=Sum('bp_votes'),
         grand_total=Sum('total_votes'),
     )
     
@@ -789,8 +953,11 @@ def download_allocation_pdf(request, allocation_id):
     story.append(Spacer(1, 12))
     totals_text = f"""
     <b>TOTALS:</b><br/>
-    AA: {totals['total_aa']} | AD: {totals['total_ad']} | ADC: {totals['total_adc']}<br/>
-    APC: {totals['total_apc']} | LP: {totals['total_lp']} | PDP: {totals['total_pdp']}<br/>
+    AA: {totals['total_aa']} | AD: {totals['total_ad']} | ADC: {totals['total_adc']} | APC: {totals['total_apc']}<br/>
+    LP: {totals['total_lp']} | PDP: {totals['total_pdp']} | NRM: {totals['total_nrm']} | NNPP: {totals['total_nnpp']}<br/>
+    PRP: {totals['total_prp']} | SDP: {totals['total_sdp']} | YPP: {totals['total_ypp']} | YP: {totals['total_yp']}<br/>
+    ZLP: {totals['total_zlp']} | A: {totals['total_a']} | AAC: {totals['total_aac']} | APM: {totals['total_apm']}<br/>
+    APGA: {totals['total_apga']} | APP: {totals['total_app']} | BP: {totals['total_bp']}<br/>
     <b>Grand Total: {totals['grand_total']}</b>
     """
     story.append(Paragraph(totals_text, styles['Normal']))
@@ -823,7 +990,21 @@ def validate_allocation(request):
             float(data.get('adc_percentage', 0)) +
             float(data.get('apc_percentage', 0)) +
             float(data.get('lp_percentage', 0)) +
-            float(data.get('pdp_percentage', 0))
+            float(data.get('pdp_percentage', 0)) +
+            float(data.get('nrm_percentage', 0)) +
+            float(data.get('nnpp_percentage', 0)) +
+            float(data.get('prp_percentage', 0)) +
+            float(data.get('sdp_percentage', 0)) +
+            float(data.get('ypp_percentage', 0)) +
+            float(data.get('yp_percentage', 0)) +
+            float(data.get('zlp_percentage', 0)) +
+            float(data.get('a_percentage', 0)) +
+            float(data.get('aac_percentage', 0)) +
+            float(data.get('adp_percentage', 0)) +
+            float(data.get('apm_percentage', 0)) +
+            float(data.get('apga_percentage', 0)) +
+            float(data.get('app_percentage', 0)) +
+            float(data.get('bp_percentage', 0))
         )
         
         return JsonResponse({

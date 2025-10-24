@@ -26,6 +26,20 @@ class PollingUnit(models.Model):
     apc_original = models.FloatField(default=0)
     lp_original = models.FloatField(default=0)
     pdp_original = models.FloatField(default=0)
+    nrm_original = models.FloatField(default=0)
+    nnpp_original = models.FloatField(default=0)
+    prp_original = models.FloatField(default=0)
+    sdp_original = models.FloatField(default=0)
+    ypp_original = models.FloatField(default=0)
+    yp_original = models.FloatField(default=0)
+    zlp_original = models.FloatField(default=0)
+    a_original = models.FloatField(default=0)
+    aac_original = models.FloatField(default=0)
+    adp_original = models.FloatField(default=0)
+    apm_original = models.FloatField(default=0)
+    apga_original = models.FloatField(default=0)
+    app_original = models.FloatField(default=0)
+    bp_original = models.FloatField(default=0)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -49,6 +63,20 @@ class VoteAllocation(models.Model):
     apc_percentage = models.FloatField(default=0, help_text="Percentage for APC party")
     lp_percentage = models.FloatField(default=0, help_text="Percentage for LP party")
     pdp_percentage = models.FloatField(default=0, help_text="Percentage for PDP party")
+    nrm_percentage = models.FloatField(default=0, help_text="Percentage for NRM party")
+    nnpp_percentage = models.FloatField(default=0, help_text="Percentage for NNPP party")
+    prp_percentage = models.FloatField(default=0, help_text="Percentage for PRP party")
+    sdp_percentage = models.FloatField(default=0, help_text="Percentage for SDP party")
+    ypp_percentage = models.FloatField(default=0, help_text="Percentage for YPP party")
+    yp_percentage = models.FloatField(default=0, help_text="Percentage for YP party")
+    zlp_percentage = models.FloatField(default=0, help_text="Percentage for ZLP party")
+    a_percentage = models.FloatField(default=0, help_text="Percentage for Accord party")
+    aac_percentage = models.FloatField(default=0, help_text="Percentage for AAC party")
+    adp_percentage = models.FloatField(default=0, help_text="Percentage for ADP party")
+    apm_percentage = models.FloatField(default=0, help_text="Percentage for APM party")
+    apga_percentage = models.FloatField(default=0, help_text="Percentage for APGA party")
+    app_percentage = models.FloatField(default=0, help_text="Percentage for APP party")
+    bp_percentage = models.FloatField(default=0, help_text="Percentage for BP party")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -58,7 +86,12 @@ class VoteAllocation(models.Model):
 
     def total_percentage(self):
         return (self.aa_percentage + self.ad_percentage + self.adc_percentage + 
-                self.apc_percentage + self.lp_percentage + self.pdp_percentage)
+                self.apc_percentage + self.lp_percentage + self.pdp_percentage +
+                self.nrm_percentage + self.nnpp_percentage + self.prp_percentage +
+                self.sdp_percentage + self.ypp_percentage + self.yp_percentage +
+                self.zlp_percentage + self.a_percentage + self.aac_percentage +
+                self.adp_percentage + self.apm_percentage + self.apga_percentage + 
+                self.app_percentage + self.bp_percentage)
     
     def is_valid_allocation(self):
         return abs(self.total_percentage() - 100.0) < 0.01
@@ -71,6 +104,20 @@ class VoteAllocation(models.Model):
             'APC': self.apc_percentage,
             'LP': self.lp_percentage,
             'PDP': self.pdp_percentage,
+            'NRM': self.nrm_percentage,
+            'NNPP': self.nnpp_percentage,
+            'PRP': self.prp_percentage,
+            'SDP': self.sdp_percentage,
+            'YPP': self.ypp_percentage,
+            'YP': self.yp_percentage,
+            'ZLP': self.zlp_percentage,
+            'A': self.a_percentage,
+            'AAC': self.aac_percentage,
+            'ADP': self.adp_percentage,
+            'APM': self.apm_percentage,
+            'APGA': self.apga_percentage,
+            'APP': self.app_percentage,
+            'BP': self.bp_percentage,
         }
 
 class AllocatedResult(models.Model):
@@ -79,13 +126,27 @@ class AllocatedResult(models.Model):
     vote_allocation = models.ForeignKey(VoteAllocation, on_delete=models.CASCADE)
     
     # Calculated votes for each party
-    aa_votes = models.FloatField()
-    ad_votes = models.FloatField()
-    adc_votes = models.FloatField()
-    apc_votes = models.FloatField()
-    lp_votes = models.FloatField()
-    pdp_votes = models.FloatField()
-    total_votes = models.FloatField()
+    aa_votes = models.FloatField(default=0)
+    ad_votes = models.FloatField(default=0)
+    adc_votes = models.FloatField(default=0)
+    apc_votes = models.FloatField(default=0)
+    lp_votes = models.FloatField(default=0)
+    pdp_votes = models.FloatField(default=0)
+    nrm_votes = models.FloatField(default=0)
+    nnpp_votes = models.FloatField(default=0)
+    prp_votes = models.FloatField(default=0)
+    sdp_votes = models.FloatField(default=0)
+    ypp_votes = models.FloatField(default=0)
+    yp_votes = models.FloatField(default=0)
+    zlp_votes = models.FloatField(default=0)
+    a_votes = models.FloatField(default=0)
+    aac_votes = models.FloatField(default=0)
+    adp_votes = models.FloatField(default=0)
+    apm_votes = models.FloatField(default=0)
+    apga_votes = models.FloatField(default=0)
+    app_votes = models.FloatField(default=0)
+    bp_votes = models.FloatField(default=0)
+    total_votes = models.FloatField(default=0)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
