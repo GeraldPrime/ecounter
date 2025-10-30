@@ -26,7 +26,7 @@
                     <div class="card">
                         <div class="card-body">
                             <h4 class="header-title">Upload Polling Units Data</h4>
-                            <p class="text-muted">Upload an Excel file containing polling units data with the required columns.</p>
+                            <p class="text-muted">Upload an Excel file containing polling units data. The system will automatically detect the vote count field, or you can select it manually if needed.</p>
 
                             <form method="post" enctype="multipart/form-data" id="uploadForm">
                                 {% csrf_token %}
@@ -49,7 +49,7 @@
                                         <li>REGISTERED VOTER AS AT 2024</li>
                                         <li>NO OF PVC COLLECTED</li>
                                         <li>BALANCE OF UNCOLECTED PVCs</li>
-                                        <li>45% PVC COLLECTION</li>
+                                        <li><strong>Vote Count Field (auto-detected)</strong> - e.g., "45% PVC COLLECTION", "ACCREDITATION", "VOTES CAST"</li>
                                         <li>AA, AD, ADC, APC, LP, PDP (optional)</li>
                                     </ul>
                                 </div>

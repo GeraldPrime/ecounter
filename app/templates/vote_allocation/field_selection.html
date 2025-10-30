@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="content-page">
+    <div class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box">
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a href="{% url 'upload_data' %}">Upload Data</a></li>
+                                <li class="breadcrumb-item active">Select Vote Count Field</li>
+                            </ol>
+                        </div>
+                        <h4 class="page-title">Select Vote Count Field</h4>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8 offset-lg-2">
+                    <div class="card">
+                        <div class="card-body">
+                            {% if error_msg %}
+                            <div class="alert alert-warning">
+                                <h5><i class="ri-alert-line me-2"></i>Field Detection Issue</h5>
+                                <p>{{ error_msg }}</p>
+                            </div>
+                            {% endif %}
+
+                            <h4 class="header-title">Select Vote Count Field</h4>
+                            <p class="text-muted">We couldn't automatically detect the vote count field. Please select the field that contains the number of people who voted.</p>
+
+                            <form method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <input type="hidden" name="excel_file" value="{{ request.FILES.excel_file.name }}">
+                                
+                                <div class="mb-3">
+                                    <label for="vote_count_field" class="form-label">Vote Count Field *</label>
+                                    <select class="form-select" id="vote_count_field" name="vote_count_field" required>
+                                        <option value="">Choose the field containing vote counts...</option>
+                                        {% for column in columns %}
+                                        <option value="{{ column }}">{{ column }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">Select the column that contains the number of people who voted (e.g., "ACCREDITATION", "VOTES CAST", "45% PVC COLLECTION", etc.)</div>
+                                </div>
+
+                                <div class="mt-3 mb-3">
+                                    <h6>Sample Data Preview:</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-bordered">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    {% for column in columns %}
+                                                    <th>{{ column }}</th>
+                                                    {% endfor %}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for row in sample_data %}
+                                                <tr>
+                                                    {% for column in columns %}
+                                                    <td>{{ row|default_if_none:"" }}</td>
+                                                    {% endfor %}
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <small class="text-muted">This shows the first 3 rows of your data to help you identify the correct field.</small>
+                                </div>
+
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="{% url 'upload_data' %}" class="btn btn-secondary me-md-2">
+                                        <i class="ri-arrow-left-line me-1"></i> Back to Upload
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="ri-check-line me-1"></i> Continue with Selected Field
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8 offset-lg-2">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="header-title">Common Vote Count Field Names</h5>
+                            <p class="text-muted">The system automatically looks for these field names:</p>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        <li><i class="ri-check-line text-success me-2"></i> ACCREDITATION</li>
+                                        <li><i class="ri-check-line text-success me-2"></i> VOTES CAST</li>
+                                        <li><i class="ri-check-line text-success me-2"></i> TOTAL VOTES</li>
+                                        <li><i class="ri-check-line text-success me-2"></i> VOTER TURNOUT</li>
+                                        <li><i class="ri-check-line text-success me-2"></i> ACTUAL VOTES</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        <li><i class="ri-check-line text-success me-2"></i> VOTES RECORDED</li>
+                                        <li><i class="ri-check-line text-success me-2"></i> BALLOT CAST</li>
+                                        <li><i class="ri-check-line text-success me-2"></i> VOTING NUMBERS</li>
+                                        <li><i class="ri-check-line text-success me-2"></i> 45% PVC COLLECTION</li>
+                                        <li><i class="ri-check-line text-success me-2"></i> ACCREDITED VOTERS</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

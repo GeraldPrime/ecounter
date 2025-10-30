@@ -19,7 +19,8 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 
-from .models import PollingUnit, VoteAllocation, AllocatedResult
+from .models import PollingUnit, VoteAllocation, AllocatedResult, UploadSession
+from .utils import detect_vote_count_field, validate_vote_count_field
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 
@@ -50,6 +51,10 @@ def dashboard(request):
         average_pvc_per_unit = total_pvc_45 / total_units
 
     recent_allocations = VoteAllocation.objects.order_by('-created_at')[:5]
+    
+    # Get the most recent upload session info
+    latest_upload = UploadSession.objects.order_by('-created_at').first()
+    current_vote_field = latest_upload.vote_count_field_name if latest_upload else "45% PVC COLLECTION"
 
     context = {
         'total_units': total_units,
@@ -57,6 +62,7 @@ def dashboard(request):
         'total_pvc_45': total_pvc_45,
         'average_pvc_per_unit': average_pvc_per_unit,
         'recent_allocations': recent_allocations,
+        'current_vote_field': current_vote_field,
     }
     return render(request, 'vote_allocation/dashboard.html', context)
 
@@ -141,74 +147,150 @@ def dashboard(request):
 
 @login_required
 def upload_data(request):
-    """Handle Excel file upload"""
+    """Handle Excel file upload with dynamic field detection"""
     if request.method == 'POST' and request.FILES.get('excel_file'):
         excel_file = request.FILES['excel_file']
         
         try:
             df = pd.read_excel(excel_file)
-            PollingUnit.objects.all().delete()
-            AllocatedResult.objects.all().delete()
             
-            created_count = 0
-            errors = []
+            # Detect vote count field
+            detected_field = detect_vote_count_field(df.columns.tolist())
             
-            for index, row in df.iterrows():
-                try:
-                    if pd.isna(row.get('S/NO')) or row.get('S/NO') == '':
-                        continue
-                    
-                    # Round the 45% PVC to whole number
-                    pvc_45_raw = float(str(row.get('45% PVC COLLECTION', 0)).replace(',', ''))
-                    pvc_45_rounded = round(pvc_45_raw)
-                    
-                    polling_unit = PollingUnit.objects.create(
-                        sno=int(float(str(row.get('S/NO', 0)).replace(',', ''))),
-                        state=str(row.get('STATE', '')).strip(),
-                        lga=str(row.get('LGA', '')).strip(),
-                        ra=str(row.get('RA', '')).strip(),
-                        delim=str(row.get('DELIM', '')).strip(),
-                        register_voter_2023=str(row.get('REGISTER VOTER AS AT 2023', '')).strip(),
-                        registered_voter_2024=int(float(str(row.get('REGISTERED VOTER AS AT 2024', 0)).replace(',', ''))),
-                        pvc_collected=int(float(str(row.get('NO OF PVC COLLECTED ', 0)).replace(',', ''))),
-                        balance_uncollected=int(float(str(row.get('BALANCE OF UNCOLECTED PVCs', 0)).replace(',', ''))),
-                        pvc_45_percent=pvc_45_rounded,  # Now rounded to whole number
-                        aa_original=0,
-                        ad_original=0,
-                        adc_original=0,
-                        apc_original=0,
-                        lp_original=0,
-                        pdp_original=0,
-                    )
-                    created_count += 1
-                    
-                    if created_count % 100 == 0:
-                        print(f"Imported {created_count} records...")
-                        
-                except Exception as row_error:
-                    error_msg = f"Error in row {index + 2}: {str(row_error)}"
-                    print(error_msg)
-                    errors.append(error_msg)
-                    continue
-            
-            if created_count > 0:
-                messages.success(request, f'Successfully imported {created_count} polling units.')
-                if errors:
-                    messages.warning(request, f'Encountered {len(errors)} errors during import.')
+            if detected_field:
+                # Validate the detected field
+                is_valid, validation_msg = validate_vote_count_field(df, detected_field)
+                
+                if is_valid:
+                    # Proceed with import using detected field
+                    return process_excel_import(request, df, detected_field)
+                else:
+                    # Field detected but invalid, show selection interface
+                    return show_field_selection(request, df, validation_msg)
             else:
-                messages.error(request, 'No valid data was imported. Please check your Excel file format.')
-            
-            return redirect('dashboard')
+                # No field detected, show selection interface
+                return show_field_selection(request, df, "No vote count field automatically detected")
             
         except Exception as e:
-            error_msg = f'Error importing data: {str(e)}'
+            error_msg = f'Error reading Excel file: {str(e)}'
             print(error_msg)
             messages.error(request, error_msg)
+    
+    elif request.method == 'POST' and request.POST.get('vote_count_field'):
+        # User selected a field manually
+        excel_file = request.FILES.get('excel_file')
+        if excel_file:
+            try:
+                df = pd.read_excel(excel_file)
+                selected_field = request.POST.get('vote_count_field')
+                
+                # Validate selected field
+                is_valid, validation_msg = validate_vote_count_field(df, selected_field)
+                
+                if is_valid:
+                    return process_excel_import(request, df, selected_field)
+                else:
+                    messages.error(request, f'Selected field is invalid: {validation_msg}')
+                    return show_field_selection(request, df, validation_msg)
+            except Exception as e:
+                messages.error(request, f'Error processing file: {str(e)}')
     
     elif request.method == 'POST':
         messages.error(request, 'No file was selected. Please choose an Excel file.')
 
     return render(request, 'vote_allocation/upload.html')
+
+def show_field_selection(request, df, error_msg=None):
+    """Show field selection interface when automatic detection fails"""
+    context = {
+        'columns': df.columns.tolist(),
+        'error_msg': error_msg,
+        'sample_data': df.head(3).to_dict('records') if len(df) > 0 else []
+    }
+    return render(request, 'vote_allocation/field_selection.html', context)
+
+def process_excel_import(request, df, vote_count_field):
+    """Process Excel import with the specified vote count field"""
+    try:
+        # Clear existing data
+        PollingUnit.objects.all().delete()
+        AllocatedResult.objects.all().delete()
+        
+        created_count = 0
+        errors = []
+        
+        for index, row in df.iterrows():
+            try:
+                if pd.isna(row.get('S/NO')) or row.get('S/NO') == '':
+                    continue
+                
+                # Get vote count from the specified field
+                vote_count_raw = float(str(row.get(vote_count_field, 0)).replace(',', ''))
+                vote_count_rounded = round(vote_count_raw)
+                
+                polling_unit = PollingUnit.objects.create(
+                    sno=int(float(str(row.get('S/NO', 0)).replace(',', ''))),
+                    state=str(row.get('STATE', '')).strip(),
+                    lga=str(row.get('LGA', '')).strip(),
+                    ra=str(row.get('RA', '')).strip(),
+                    delim=str(row.get('DELIM', '')).strip(),
+                    register_voter_2023=str(row.get('REGISTER VOTER AS AT 2023', '')).strip(),
+                    registered_voter_2024=int(float(str(row.get('REGISTERED VOTER AS AT 2024', 0)).replace(',', ''))),
+                    pvc_collected=int(float(str(row.get('NO OF PVC COLLECTED ', 0)).replace(',', ''))),
+                    balance_uncollected=int(float(str(row.get('BALANCE OF UNCOLECTED PVCs', 0)).replace(',', ''))),
+                    pvc_45_percent=vote_count_rounded,  # Store the vote count in pvc_45_percent field
+                    aa_original=0,
+                    ad_original=0,
+                    adc_original=0,
+                    apc_original=0,
+                    lp_original=0,
+                    pdp_original=0,
+                    nrm_original=0,
+                    nnpp_original=0,
+                    prp_original=0,
+                    sdp_original=0,
+                    ypp_original=0,
+                    yp_original=0,
+                    zlp_original=0,
+                    a_original=0,
+                    aac_original=0,
+                    adp_original=0,
+                    apm_original=0,
+                    apga_original=0,
+                    app_original=0,
+                    bp_original=0,
+                )
+                created_count += 1
+                
+                if created_count % 100 == 0:
+                    print(f"Imported {created_count} records...")
+                    
+            except Exception as row_error:
+                error_msg = f"Error in row {index + 2}: {str(row_error)}"
+                print(error_msg)
+                errors.append(error_msg)
+                continue
+        
+        # Store upload session info
+        UploadSession.objects.create(
+            vote_count_field_name=vote_count_field,
+            total_records=created_count
+        )
+        
+        if created_count > 0:
+            messages.success(request, f'Successfully imported {created_count} polling units using field "{vote_count_field}".')
+            if errors:
+                messages.warning(request, f'Encountered {len(errors)} errors during import.')
+        else:
+            messages.error(request, 'No valid data was imported. Please check your Excel file format.')
+        
+        return redirect('dashboard')
+        
+    except Exception as e:
+        error_msg = f'Error importing data: {str(e)}'
+        print(error_msg)
+        messages.error(request, error_msg)
+        return redirect('upload_data')
 
 @login_required
 def polling_units_list(request):
@@ -674,10 +756,14 @@ def download_allocation_excel(request, allocation_id):
     ws = wb.active
     ws.title = "Vote Allocation Results"
     
+    # Get the current vote field name
+    latest_upload = UploadSession.objects.order_by('-created_at').first()
+    vote_field_name = latest_upload.vote_count_field_name if latest_upload else "45% PVC COLLECTION"
+    
     headers = [
         'S/NO', 'STATE', 'LGA', 'RA', 'DELIM', 'REGISTER VOTER AS AT 2023',
         'REGISTERED VOTER AS AT 2024', 'NO OF PVC COLLECTED', 'BALANCE OF UNCOLLECTED PVCs',
-        '45% PVC COLLECTION',
+        vote_field_name,
         f'AA ({allocation.aa_percentage}%)', 
         f'AD ({allocation.ad_percentage}%)', 
         f'ADC ({allocation.adc_percentage}%)', 
@@ -697,6 +783,7 @@ def download_allocation_excel(request, allocation_id):
         f'APGA ({allocation.apga_percentage}%)',
         f'APP ({allocation.app_percentage}%)',
         f'BP ({allocation.bp_percentage}%)',
+        'Invalid Votes',
         'TOTAL'
     ]
     
@@ -742,7 +829,9 @@ def download_allocation_excel(request, allocation_id):
         ws.cell(row=row_num, column=27, value=result.apga_votes)
         ws.cell(row=row_num, column=28, value=result.app_votes)
         ws.cell(row=row_num, column=29, value=result.bp_votes)
-        ws.cell(row=row_num, column=30, value=result.total_votes)
+        invalid_votes = max(int(unit.pvc_45_percent) - int(result.total_votes), 0)
+        ws.cell(row=row_num, column=30, value=invalid_votes)
+        ws.cell(row=row_num, column=31, value=result.total_votes)
     
     # TOTALS ROW - Calculate totals for ALL numeric columns
     total_row = len(results) + 2
@@ -801,10 +890,12 @@ def download_allocation_excel(request, allocation_id):
     ws.cell(row=total_row, column=27, value=vote_totals['total_apga'])
     ws.cell(row=total_row, column=28, value=vote_totals['total_app'])
     ws.cell(row=total_row, column=29, value=vote_totals['total_bp'])
-    ws.cell(row=total_row, column=30, value=vote_totals['grand_total'])
+    total_invalid = max(int(total_pvc_45) - int(vote_totals['grand_total'] or 0), 0)
+    ws.cell(row=total_row, column=30, value=total_invalid)
+    ws.cell(row=total_row, column=31, value=vote_totals['grand_total'])
     
     # Style totals row
-    for col in range(1, 31):
+    for col in range(1, 32):
         cell = ws.cell(row=total_row, column=col)
         cell.font = Font(bold=True)
         cell.fill = PatternFill(start_color="E8E8E8", end_color="E8E8E8", fill_type="solid")
@@ -875,8 +966,12 @@ def download_allocation_pdf(request, allocation_id):
     story.append(Spacer(1, 12))
     
     # Table data
+    # Get the current vote field name
+    latest_upload = UploadSession.objects.order_by('-created_at').first()
+    vote_field_name = latest_upload.vote_count_field_name if latest_upload else "45% PVC COLLECTION"
+    
     table_data = [
-        ['S/NO', 'State', 'LGA', 'Polling Unit', 'PVC', 'AA', 'AD', 'ADC', 'APC', 'LP', 'PDP', 'NRM', 'NNPP', 'PRP', 'SDP', 'YPP', 'YP', 'ZLP', 'A', 'AAC', 'APM', 'APGA', 'APP', 'BP', 'Total']
+        ['S/NO', 'State', 'LGA', 'Polling Unit', vote_field_name[:10], 'AA', 'AD', 'ADC', 'APC', 'LP', 'PDP', 'NRM', 'NNPP', 'PRP', 'SDP', 'YPP', 'YP', 'ZLP', 'A', 'AAC', 'APM', 'APGA', 'APP', 'BP', 'Total']
     ]
     
     for result in results:

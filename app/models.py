@@ -155,3 +155,12 @@ class AllocatedResult(models.Model):
 
     def __str__(self):
         return f"{self.polling_unit.delim} - {self.vote_allocation.name}"
+
+class UploadSession(models.Model):
+    """Store information about uploaded data sessions"""
+    vote_count_field_name = models.CharField(max_length=100, help_text="The field name used for vote counts")
+    total_records = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Upload {self.id} - {self.vote_count_field_name} ({self.total_records} records)"
